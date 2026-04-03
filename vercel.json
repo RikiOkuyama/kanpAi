@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/after-party",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/bereal",
+      "schedule": "*/5 * * * *"
+    }
+  ]
+}
