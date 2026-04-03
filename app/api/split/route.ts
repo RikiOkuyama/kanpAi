@@ -27,20 +27,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "パーティーが見つかりません" }, { status: 404 });
     }
 
-    const hasSpecialNotes = splitParticipants.some((p) => p.note);
-
-    let splitResults: SplitResult[];
-
-    if (hasSpecialNotes) {
-      // Geminiで人間的な割り勘計算
-      const prompt = `飲み会の割り勘を計算してください。
+    // 常にGeminiで計算（事情なしの場合も均等割りの根拠をAIが説明）
+    const prompt = `飲み会の割り勘を計算してください。
 
 合計金額: ${totalAmount.toLocaleString()}円
 参加者と事情:
-${splitParticipants.map((p) => `- ${p.name}: ${p.note || "通常参加"}`).join("\n")}
+${splitParticipants.map((p) => `- ${p.name}: ${p.note || "特になし"}`).join("\n")}
 
-事情を考慮して公平な割り勘金額を計算してください。
-必ず以下のJSON形式で返してください:
+ルール:
+- 事情の内容に応じて各自の負担額を増減させてください
+  - 例: 「早退した」→ 少なめ、「ソフドリのみ」→ かなり少なめ、「たくさん飲んだ」「肉をいっぱい食べた」→ 多め、「誕生日」→ 無料や大幅減額、「幹事」→ 少し減額
+- 事情が「特になし」の人は基準額として扱ってください
+- 均等にする必要はありません。事情に応じて差をつけてください
+- 合計が必ず${totalAmount}円になるよう端数を調整してください
+- 金額は全て整数（円単位）にしてください
+
+必ず以下のJSON形式のみで返してください（説明文不要）:
 
 \`\`\`json
 {
@@ -49,44 +51,42 @@ ${splitParticipants.map((p) => `- ${p.name}: ${p.note || "通常参加"}`).join(
       "participantId": "参加者のID",
       "name": "名前",
       "amount": 金額（整数）,
-      "note": "計算の根拠やコメント"
+      "note": "計算根拠（例: 早退のため半額、たくさん飲んだため1.5倍 など）"
     }
-  ],
-  "totalCheck": 合計金額（各amountの合計）
+  ]
 }
 \`\`\`
 
-${splitParticipants.map((p) => `${p.name}のID: ${p.id}`).join("\n")}`;
+参加者IDの対応:
+${splitParticipants.map((p) => `${p.name} → ID: ${p.id}`).join("\n")}`;
 
-      const geminiRaw = await callGemini(prompt);
+    const geminiRaw = await callGemini(prompt);
 
-      try {
-        const jsonMatch = geminiRaw.match(/```json\n?([\s\S]*?)\n?```/) ||
-          geminiRaw.match(/(\{[\s\S]*\})/);
-        if (!jsonMatch) throw new Error("JSON not found");
+    let splitResults: SplitResult[];
 
-        const parsed = JSON.parse(jsonMatch[1]);
-        splitResults = parsed.results;
-      } catch {
-        // パース失敗時は均等割り
-        const perPerson = Math.ceil(totalAmount / splitParticipants.length);
-        splitResults = splitParticipants.map((p) => ({
-          participantId: p.id,
-          name: p.name,
-          amount: perPerson,
-          note: "均等割り",
-        }));
+    try {
+      const jsonMatch = geminiRaw.match(/```json\n?([\s\S]*?)\n?```/) ||
+        geminiRaw.match(/(\{[\s\S]*\})/);
+      if (!jsonMatch) throw new Error("JSON not found");
+
+      const parsed = JSON.parse(jsonMatch[1]);
+      splitResults = parsed.results;
+
+      // 合計金額のズレを補正（端数調整）
+      const calcTotal = splitResults.reduce((s: number, r: SplitResult) => s + r.amount, 0);
+      const diff = totalAmount - calcTotal;
+      if (diff !== 0) {
+        splitResults[0].amount += diff;
       }
-    } else {
-      // 事情なし → シンプルな均等割り
+    } catch {
+      // パース失敗時は均等割りにフォールバック
       const base = Math.floor(totalAmount / splitParticipants.length);
       const remainder = totalAmount - base * splitParticipants.length;
-
       splitResults = splitParticipants.map((p, i) => ({
         participantId: p.id,
         name: p.name,
-        amount: i === 0 ? base + remainder : base, // 端数は最初の人
-        note: i === 0 && remainder > 0 ? `端数${remainder}円含む` : "",
+        amount: i === 0 ? base + remainder : base,
+        note: i === 0 && remainder > 0 ? `均等割り（端数${remainder}円含む）` : "均等割り",
       }));
     }
 

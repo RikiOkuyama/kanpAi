@@ -1,4 +1,4 @@
-export type PartyStatus = "planning" | "reserved" | "ongoing" | "done";
+export type PartyStatus = "planning" | "candidate" | "reserved" | "ongoing" | "done";
 
 export interface Participant {
   id: string;

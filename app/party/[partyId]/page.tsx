@@ -5,6 +5,7 @@ import { onSnapshot, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase-client";
 import { Party, Restaurant, GeminiSuggestion } from "@/types/party";
 import QRCodeDisplay from "@/app/components/QRCodeDisplay";
+import SwipePreview from "@/app/components/SwipePreview";
 import Link from "next/link";
 
 interface PageProps {
@@ -12,10 +13,11 @@ interface PageProps {
 }
 
 const STATUS_LABELS: Record<string, string> = {
-  planning: "🗓 プランニング中",
-  reserved: "✅ 予約済み",
-  ongoing: "🍺 開催中",
-  done: "🎊 終了",
+  planning:  "🗓 プランニング中",
+  candidate: "🔖 予約候補選択中",
+  reserved:  "✅ 予約済み",
+  ongoing:   "🍺 開催中",
+  done:      "🎊 終了",
 };
 
 export default function PartyPage({ params }: PageProps) {
@@ -91,7 +93,7 @@ export default function PartyPage({ params }: PageProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           selectedRestaurant: restaurant,
-          status: "reserved",
+          status: "candidate",
         }),
       });
       await fetchParty();
@@ -255,10 +257,52 @@ export default function PartyPage({ params }: PageProps) {
             </button>
           ) : (
             <div className="flex flex-col gap-4">
+              {/* スワイプで選ぶ */}
+              <div className="rounded-3xl overflow-hidden border border-purple-100 bg-white shadow-sm">
+                <SwipePreview />
+                <Link
+                  href={`/party/${partyId}/swipe`}
+                  className="block w-full py-4 text-center text-white font-bold text-base"
+                  style={{ background: "linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)" }}
+                >
+                  👆 スワイプでお店を選ぶ
+                </Link>
+                <button
+                  onClick={() => {
+                    const swipeUrl = `${appUrl}/party/${partyId}/swipe`;
+                    navigator.clipboard.writeText(swipeUrl);
+                    alert("スワイプURLをコピーしました！参加者に送ってください🍺");
+                  }}
+                  className="w-full py-3 text-sm text-purple-600 font-medium border-t border-purple-100 hover:bg-purple-50 transition-colors"
+                >
+                  🔗 スワイプURLをみんなにシェア
+                </button>
+              </div>
+
               {party.selectedRestaurant && (
-                <div className="p-4 bg-green-50 border border-green-200 rounded-2xl mb-2">
-                  <p className="text-sm font-bold text-green-700 mb-1">✅ 選択済み</p>
-                  <p className="font-bold text-gray-800">{party.selectedRestaurant.name}</p>
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl mb-2 flex flex-col gap-3">
+                  <div>
+                    <p className="text-xs font-bold text-blue-600 mb-1">🔖 予約候補</p>
+                    <p className="font-bold text-gray-800">{party.selectedRestaurant.name}</p>
+                  </div>
+                  {party.status !== "reserved" && (
+                    <button
+                      onClick={async () => {
+                        await fetch(`/api/party/${partyId}`, {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ status: "reserved" }),
+                        });
+                        await fetchParty();
+                      }}
+                      className="w-full py-2.5 rounded-xl bg-green-500 text-white text-sm font-bold hover:bg-green-600 transition-colors"
+                    >
+                      ✅ 予約済みにする
+                    </button>
+                  )}
+                  {party.status === "reserved" && (
+                    <p className="text-sm font-bold text-green-600">✅ 予約済み</p>
+                  )}
                 </div>
               )}
 
@@ -363,7 +407,7 @@ export default function PartyPage({ params }: PageProps) {
         <section className="bg-white rounded-3xl shadow-sm p-6">
           <h2 className="text-xl font-bold text-gray-800 mb-4">⚙️ ステータス管理</h2>
           <div className="grid grid-cols-2 gap-3">
-            {["planning", "reserved", "ongoing", "done"].map((s) => (
+            {["planning", "candidate", "reserved", "ongoing", "done"].map((s) => (
               <button
                 key={s}
                 onClick={() => handleStatusChange(s)}

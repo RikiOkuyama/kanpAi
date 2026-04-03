@@ -118,7 +118,7 @@ export default function SplitPage({ params }: PageProps) {
         <section className="bg-white rounded-3xl shadow-sm p-6">
           <h2 className="text-base font-bold text-gray-800 mb-4">参加者の事情（任意）</h2>
           <p className="text-xs text-gray-400 mb-4">
-            「早退した」「ソフトドリンクのみ」などを入力するとAIが考慮して割り勘します
+            何も入力しなければ均等割り。「早退した」「ソフドリのみ」「多めに飲んだ」など自由に書くとAIが負担額を調整します
           </p>
           <div className="flex flex-col gap-3">
             {splitParticipants.map((p) => (
