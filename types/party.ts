@@ -71,6 +71,8 @@ export interface Party {
   restaurants?: Restaurant[];
   geminiSuggestions?: GeminiSuggestion[];
   geminiMessage?: string;
+  requestsHonored?: boolean;  // 要望を考慮した検索結果かどうか
+  searchError?: "no_results"; // お店が見つからなかった場合
   feedbacks?: FeedbackEntry[];
   splitResults?: SplitResult[];
   afterPartyNotifiedAt?: string;

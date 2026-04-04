@@ -28,23 +28,32 @@ export default function PartyPage({ params }: PageProps) {
   const [selectingId, setSelectingId] = useState<string | null>(null);
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [beRealBanner, setBeRealBanner] = useState(false);
+  const [retryRequests, setRetryRequests] = useState("");
 
   const appUrl = typeof window !== "undefined"
     ? window.location.origin
     : process.env.NEXT_PUBLIC_APP_URL ?? "";
   const joinUrl = `${appUrl}/party/${partyId}/join`;
 
-  const handleSearchRestaurants = async () => {
+  const handleSearchRestaurants = async (newRequests?: string) => {
     setSearchingRestaurants(true);
     try {
+      // 要望を変更して再検索する場合はパーティを先に更新
+      if (newRequests !== undefined && newRequests !== party?.requests) {
+        await fetch(`/api/party/${partyId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ requests: newRequests }),
+        });
+      }
       const res = await fetch("/api/restaurants", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ partyId }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        alert(data.error ?? "お店の検索に失敗しました");
+      if (!res.ok && data.error !== "no_results") {
+        alert("お店の検索に失敗しました");
         return;
       }
       await fetchParty();
@@ -85,10 +94,11 @@ export default function PartyPage({ params }: PageProps) {
 
   useEffect(() => {
     fetchParty().then((data) => {
-      // お店未検索なら自動で検索を開始
-      if (data && !data.restaurants?.length) {
+      // お店未検索 かつ 検索エラー履歴なしなら自動で検索を開始
+      if (data && !data.restaurants?.length && !data.searchError) {
         handleSearchRestaurants();
       }
+      if (data?.requests) setRetryRequests(data.requests);
     });
   }, [partyId]);
 
@@ -251,11 +261,45 @@ export default function PartyPage({ params }: PageProps) {
           )}
 
           {!party.restaurants?.length ? (
-            <div className="flex flex-col items-center gap-3 py-6 text-center">
-              <div className="text-4xl animate-bounce">🔍</div>
-              <p className="font-bold text-gray-700">AIがお店を探しています...</p>
-              <p className="text-sm text-gray-400">しばらくお待ちください</p>
-            </div>
+            party.searchError === "no_results" ? (
+              /* 条件に合うお店が見つからなかった場合 */
+              <div className="flex flex-col gap-4">
+                <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-center">
+                  <p className="text-2xl mb-2">😢</p>
+                  <p className="font-bold text-red-700 mb-1">お店が見つかりませんでした</p>
+                  <p className="text-sm text-gray-500">
+                    {party.requests
+                      ? `「${party.requests}」の条件では該当するお店が見つかりませんでした。`
+                      : `${party.area}エリアの条件では該当するお店が見つかりませんでした。`}
+                  </p>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-semibold text-gray-700">要望・条件を変更して再検索</label>
+                  <textarea
+                    value={retryRequests}
+                    onChange={(e) => setRetryRequests(e.target.value)}
+                    placeholder="例：個室、居酒屋、焼肉（条件を緩めるか別のジャンルにしてみてください）"
+                    rows={2}
+                    className="border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
+                  />
+                  <button
+                    onClick={() => handleSearchRestaurants(retryRequests)}
+                    disabled={searchingRestaurants}
+                    className="w-full py-3 rounded-2xl text-white font-bold text-sm disabled:opacity-60"
+                    style={{ background: "linear-gradient(135deg, #F5A623 0%, #E8850A 100%)" }}
+                  >
+                    {searchingRestaurants ? "🔍 検索中..." : "🔄 この条件で再検索"}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* 検索中 */
+              <div className="flex flex-col items-center gap-3 py-6 text-center">
+                <div className="text-4xl animate-bounce">🔍</div>
+                <p className="font-bold text-gray-700">AIがお店を探しています...</p>
+                <p className="text-sm text-gray-400">しばらくお待ちください</p>
+              </div>
+            )
           ) : (
             <div className="flex flex-col gap-4">
               {/* スワイプで選ぶ */}
