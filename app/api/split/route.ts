@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminFirestore } from "@/lib/firebase-admin";
-import { callGemini } from "@/lib/gemini";
+import { callGeminiLow } from "@/lib/gemini";
 import { SplitResult } from "@/types/party";
 
 interface SplitParticipant {
@@ -27,67 +27,59 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "パーティーが見つかりません" }, { status: 404 });
     }
 
-    // 常にGeminiで計算（事情なしの場合も均等割りの根拠をAIが説明）
-    const prompt = `飲み会の割り勘を計算してください。
+    const hasNotes = splitParticipants.some((p) => p.note.trim());
 
-合計金額: ${totalAmount.toLocaleString()}円
-参加者と事情:
-${splitParticipants.map((p) => `- ${p.name}: ${p.note || "特になし"}`).join("\n")}
+    const prompt = `あなたは飲み会の割り勘を計算するAIです。
+参加者それぞれの「事情・コメント」を最大限考慮して、公平に負担額を割り振ってください。
 
-ルール:
-- 事情の内容に応じて各自の負担額を増減させてください
-  - 例: 「早退した」→ 少なめ、「ソフドリのみ」→ かなり少なめ、「たくさん飲んだ」「肉をいっぱい食べた」→ 多め、「誕生日」→ 無料や大幅減額、「幹事」→ 少し減額
-- 事情が「特になし」の人は基準額として扱ってください
-- 均等にする必要はありません。事情に応じて差をつけてください
-- 合計が必ず${totalAmount}円になるよう端数を調整してください
-- 金額は全て整数（円単位）にしてください
+## 飲み会情報
+- 合計金額: ${totalAmount.toLocaleString()}円
+- 参加人数: ${splitParticipants.length}名
+- 1人あたり均等額（参考）: ${Math.round(totalAmount / splitParticipants.length).toLocaleString()}円
 
-必ず以下のJSON形式のみで返してください（説明文不要）:
+## 参加者と事情
+${splitParticipants.map((p) => `- ${p.name}（ID: ${p.id}）: ${p.note.trim() || "事情なし"}`).join("\n")}
 
-\`\`\`json
+## 割り振りルール
+${hasNotes ? `- 【重要】事情・コメントのある人は必ずその内容を反映した金額にしてください
+- 「早退した」「途中参加」→ 均等より大幅に少なく（50〜70%程度）
+- 「ソフトドリンクのみ」「飲めない」→ かなり少なく（30〜50%程度）
+- 「たくさん飲んだ」「食べまくった」→ 多めに（120〜150%程度）
+- 「誕生日」「祝われる側」→ 無料または大幅減額
+- 「幹事」→ 少し少なく（80〜90%程度）
+- 「奢る」「多めに出す」→ その分を他の人から引いて負担
+- 「学生」「お金ない」→ 少し少なく（70〜85%程度）
+- 上記以外の事情も文脈を読んで合理的に判断してください` : `- 事情コメントがないため、全員均等に割り振ってください`}
+- 合計が必ず${totalAmount}円になるよう端数を調整してください（差額は「事情なし」の人に上乗せ）
+- 金額は全て0円以上の整数（円単位）にしてください
+
+## 出力形式（JSONのみ）
 {
   "results": [
     {
-      "participantId": "参加者のID",
+      "participantId": "ID文字列",
       "name": "名前",
-      "amount": 金額（整数）,
-      "note": "計算根拠（例: 早退のため半額、たくさん飲んだため1.5倍 など）"
+      "amount": 金額の整数,
+      "note": "計算根拠を一言で（例: 早退のため均等より30%減、ソフドリのみのため半額）"
     }
   ]
-}
-\`\`\`
+}`;
 
-参加者IDの対応:
-${splitParticipants.map((p) => `${p.name} → ID: ${p.id}`).join("\n")}`;
+    const geminiRaw = await callGeminiLow(prompt);
 
-    const geminiRaw = await callGemini(prompt);
+    // JSON modeで返ってくるので直接パース
+    const parsed = JSON.parse(geminiRaw);
+    let splitResults: SplitResult[] = parsed.results;
 
-    let splitResults: SplitResult[];
-
-    try {
-      const jsonMatch = geminiRaw.match(/```json\n?([\s\S]*?)\n?```/) ||
-        geminiRaw.match(/(\{[\s\S]*\})/);
-      if (!jsonMatch) throw new Error("JSON not found");
-
-      const parsed = JSON.parse(jsonMatch[1]);
-      splitResults = parsed.results;
-
-      // 合計金額のズレを補正（端数調整）
-      const calcTotal = splitResults.reduce((s: number, r: SplitResult) => s + r.amount, 0);
-      const diff = totalAmount - calcTotal;
-      if (diff !== 0) {
-        splitResults[0].amount += diff;
-      }
-    } catch {
-      // パース失敗時は均等割りにフォールバック
-      const base = Math.floor(totalAmount / splitParticipants.length);
-      const remainder = totalAmount - base * splitParticipants.length;
-      splitResults = splitParticipants.map((p, i) => ({
-        participantId: p.id,
-        name: p.name,
-        amount: i === 0 ? base + remainder : base,
-        note: i === 0 && remainder > 0 ? `均等割り（端数${remainder}円含む）` : "均等割り",
-      }));
+    // 合計金額のズレを補正（端数調整）
+    const calcTotal = splitResults.reduce((s: number, r: SplitResult) => s + r.amount, 0);
+    const diff = totalAmount - calcTotal;
+    if (diff !== 0) {
+      // 差額を「事情なし」の人に上乗せ（いなければ先頭）
+      const targetIdx = splitResults.findIndex(
+        (r) => !splitParticipants.find((p) => p.id === r.participantId)?.note.trim()
+      );
+      splitResults[targetIdx >= 0 ? targetIdx : 0].amount += diff;
     }
 
     // Firestoreに保存

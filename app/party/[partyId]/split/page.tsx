@@ -107,18 +107,13 @@ export default function SplitPage({ params }: PageProps) {
             />
             <span className="text-gray-500 font-medium">円</span>
           </div>
-          {totalAmount && party && (
-            <p className="text-sm text-gray-400 mt-2">
-              均等: {Math.ceil(Number(totalAmount) / splitParticipants.length).toLocaleString()}円 / 人
-            </p>
-          )}
         </section>
 
         {/* 参加者と事情 */}
         <section className="bg-white rounded-3xl shadow-sm p-6">
           <h2 className="text-base font-bold text-gray-800 mb-4">参加者の事情（任意）</h2>
           <p className="text-xs text-gray-400 mb-4">
-            何も入力しなければ均等割り。「早退した」「ソフドリのみ」「多めに飲んだ」など自由に書くとAIが負担額を調整します
+            「早退した」「ソフドリのみ」「誕生日」「たくさん飲んだ」など自由に書いてください。AIが内容を考慮して負担額を割り振ります
           </p>
           <div className="flex flex-col gap-3">
             {splitParticipants.map((p) => (
