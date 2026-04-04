@@ -20,17 +20,17 @@ const BUDGET_LABELS = [
   { value: 10000, label: "10,000円" },
 ];
 
-// SVG viewBox: 0 0 300 215
-const PIVOT_X = 70;
-const PIVOT_Y = 127;
-const BOTTLE_LEN = 113; // pivot → neck opening (px)
+// SVG viewBox: 0 0 300 250
+const PIVOT_X = 72;
+const PIVOT_Y = 150;
+const BOTTLE_LEN = 130; // pivot → neck opening (px)
 const MAX_ANGLE = 88;   // degrees (bottle fully tilted)
 
-const GLASS_CX = 235;
-const GLASS_RIM_Y = 132;
-const GLASS_BOT_Y = 207;
-const GLASS_RIM_HW = 26;  // half-width at rim
-const GLASS_BOT_HW = 20;  // half-width at bottom
+const GLASS_CX = 240;
+const GLASS_RIM_Y = 155;
+const GLASS_BOT_Y = 245;
+const GLASS_RIM_HW = 32;  // half-width at rim
+const GLASS_BOT_HW = 25;  // half-width at bottom
 
 function pctToAngle(pct: number) {
   return (pct / 100) * MAX_ANGLE;
@@ -65,7 +65,7 @@ export default function BeerSlider({
     if (!svgRef.current) return 0;
     const rect = svgRef.current.getBoundingClientRect();
     const svgX = (clientX - rect.left) / rect.width * 300;
-    const svgY = (clientY - rect.top) / rect.height * 215;
+    const svgY = (clientY - rect.top) / rect.height * 250;
     const dx = svgX - PIVOT_X;
     const dy = svgY - PIVOT_Y;
     const deg = Math.atan2(dx, -dy) * (180 / Math.PI);
@@ -138,7 +138,7 @@ export default function BeerSlider({
 
       <svg
         ref={svgRef}
-        viewBox="0 0 300 215"
+        viewBox="0 0 300 250"
         className="w-full max-w-xs select-none touch-none"
         style={{ cursor: isDragging ? "grabbing" : "grab" }}
         onPointerDown={onPtrDown}
@@ -285,67 +285,67 @@ export default function BeerSlider({
           {/* Bottle body */}
           <path
             d={`
-              M ${bx - 17} ${by - 7}
-              L ${bx - 18} ${by - 58}
-              Q ${bx - 18} ${by - 70} ${bx - 12} ${by - 76}
-              L ${bx - 9}  ${by - 82}
-              L ${bx - 9}  ${by - 107}
-              Q ${bx - 7}  ${by - 113} ${bx}     ${by - 113}
-              Q ${bx + 7}  ${by - 113} ${bx + 9}  ${by - 107}
-              L ${bx + 9}  ${by - 82}
-              L ${bx + 12} ${by - 76}
-              Q ${bx + 18} ${by - 70} ${bx + 18} ${by - 58}
-              L ${bx + 17} ${by - 7}
-              L ${bx + 17} ${by}
-              L ${bx - 17} ${by}
+              M ${bx - 20} ${by - 8}
+              L ${bx - 21} ${by - 67}
+              Q ${bx - 21} ${by - 81} ${bx - 14} ${by - 88}
+              L ${bx - 11} ${by - 95}
+              L ${bx - 11} ${by - 123}
+              Q ${bx - 8}  ${by - 130} ${bx}      ${by - 130}
+              Q ${bx + 8}  ${by - 130} ${bx + 11} ${by - 123}
+              L ${bx + 11} ${by - 95}
+              L ${bx + 14} ${by - 88}
+              Q ${bx + 21} ${by - 81} ${bx + 21} ${by - 67}
+              L ${bx + 20} ${by - 8}
+              L ${bx + 20} ${by}
+              L ${bx - 20} ${by}
               Z
             `}
             fill="url(#bc-bottle-grad)"
             stroke="#2A1005"
-            strokeWidth="1.4"
+            strokeWidth="1.5"
             strokeLinejoin="round"
           />
 
           {/* Label */}
           <rect
-            x={bx - 13} y={by - 70}
-            width="26" height="34"
-            rx="4"
+            x={bx - 15} y={by - 80}
+            width="30" height="39"
+            rx="5"
             fill="#EDE8D6"
             stroke="#B09050"
-            strokeWidth="0.8"
+            strokeWidth="0.9"
           />
 
           {/* Body highlight */}
           <path
-            d={`M ${bx + 12} ${by - 15} Q ${bx + 14} ${by - 50} ${bx + 11} ${by - 74}`}
+            d={`M ${bx + 14} ${by - 18} Q ${bx + 16} ${by - 58} ${bx + 13} ${by - 85}`}
             fill="none"
             stroke="rgba(255,255,255,0.28)"
-            strokeWidth="3"
+            strokeWidth="3.5"
             strokeLinecap="round"
           />
           {/* Neck highlight */}
           <path
-            d={`M ${bx + 6} ${by - 86} L ${bx + 6} ${by - 108}`}
+            d={`M ${bx + 7} ${by - 99} L ${bx + 7} ${by - 125}`}
             fill="none"
             stroke="rgba(255,255,255,0.22)"
-            strokeWidth="2"
+            strokeWidth="2.5"
             strokeLinecap="round"
           />
 
           {/* Bottle cap */}
           <path
-            d={`M ${bx - 8} ${by - 113} L ${bx - 7} ${by - 120} Q ${bx} ${by - 123} ${bx + 7} ${by - 120} L ${bx + 8} ${by - 113} Z`}
+            d={`M ${bx - 9} ${by - 130} L ${bx - 8} ${by - 139} Q ${bx} ${by - 142} ${bx + 8} ${by - 139} L ${bx + 9} ${by - 130} Z`}
             fill="#B03020"
             stroke="#801810"
             strokeWidth="1"
           />
           {/* Cap sheen */}
           <line
-            x1={bx - 5} y1={by - 114}
-            x2={bx - 3} y2={by - 120}
+            x1={bx - 6} y1={by - 131}
+            x2={bx - 3} y2={by - 138}
             stroke="rgba(255,140,120,0.38)"
-            strokeWidth="1.5"
+            strokeWidth="1.8"
             strokeLinecap="round"
           />
         </g>
@@ -354,7 +354,7 @@ export default function BeerSlider({
         {angle < 8 && (
           <g opacity={0.5}>
             <path
-              d={`M ${bx + 28} ${by - 60} Q ${bx + 55} ${by - 50} ${bx + 52} ${by - 28}`}
+              d={`M ${bx + 32} ${by - 69} Q ${bx + 63} ${by - 57} ${bx + 60} ${by - 32}`}
               fill="none"
               stroke="#F5A623"
               strokeWidth="2"
@@ -362,7 +362,7 @@ export default function BeerSlider({
               strokeLinecap="round"
             />
             <polygon
-              points={`${bx + 50},${by - 22} ${bx + 45},${by - 32} ${bx + 57},${by - 30}`}
+              points={`${bx + 58},${by - 25} ${bx + 52},${by - 37} ${bx + 65},${by - 34}`}
               fill="#F5A623"
             />
           </g>
