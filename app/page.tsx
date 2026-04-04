@@ -19,11 +19,15 @@ export default function HomePage() {
     organizerLineUserId: "",
   });
 
+  const [loadingStep, setLoadingStep] = useState<"party" | "restaurants" | null>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setLoadingStep("party");
 
     try {
+      // Step 1: パーティ作成
       const res = await fetch("/api/party", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -37,9 +41,19 @@ export default function HomePage() {
       }
 
       const { partyId } = await res.json();
+
+      // Step 2: AIでお店を検索
+      setLoadingStep("restaurants");
+      await fetch("/api/restaurants", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ partyId }),
+      });
+
       router.push(`/party/${partyId}`);
     } finally {
       setLoading(false);
+      setLoadingStep(null);
     }
   };
 
@@ -179,7 +193,7 @@ export default function HomePage() {
               boxShadow: "0 4px 15px rgba(245, 166, 35, 0.4)",
             }}
           >
-            {loading ? "🍺 プランニング中..." : "🎉 飲み会を立ち上げる！"}
+            {loadingStep === "party" ? "🍺 飲み会を作成中..." : loadingStep === "restaurants" ? "🔍 AIがお店を探しています..." : "🎉 飲み会を立ち上げる！"}
           </button>
         </form>
 

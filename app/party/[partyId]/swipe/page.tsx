@@ -223,9 +223,6 @@ export default function SwipePage({ params }: PageProps) {
 
   // イントロ画面
   if (phase === "intro") {
-    const swipeUrl = typeof window !== "undefined"
-      ? `${window.location.origin}/party/${partyId}/swipe`
-      : "";
     return (
       <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(135deg, #fffbf5 0%, #fef3e2 100%)" }}>
         <header className="bg-white border-b border-amber-100 px-4 py-4 sticky top-0 z-10">
@@ -259,16 +256,6 @@ export default function SwipePage({ params }: PageProps) {
             👆 スワイプを始める
           </button>
 
-          {/* URLシェア */}
-          <button
-            onClick={() => {
-              navigator.clipboard.writeText(swipeUrl);
-              alert("スワイプURLをコピーしました！参加者に送ってください🍺");
-            }}
-            className="w-full py-4 rounded-3xl border border-purple-200 text-purple-600 font-medium text-base hover:bg-purple-50 transition-colors"
-          >
-            🔗 このURLをみんなにシェア
-          </button>
         </main>
       </div>
     );

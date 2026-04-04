@@ -34,38 +34,6 @@ export default function PartyPage({ params }: PageProps) {
     : process.env.NEXT_PUBLIC_APP_URL ?? "";
   const joinUrl = `${appUrl}/party/${partyId}/join`;
 
-  const fetchParty = async () => {
-    const res = await fetch(`/api/party/${partyId}`);
-    if (res.ok) {
-      const data = await res.json();
-      setParty(data);
-      // localStorageに履歴保存
-      const stored = localStorage.getItem("kanpai_history");
-      const ids: string[] = stored ? JSON.parse(stored) : [];
-      if (!ids.includes(partyId)) {
-        localStorage.setItem("kanpai_history", JSON.stringify([partyId, ...ids].slice(0, 20)));
-      }
-    }
-    setLoading(false);
-  };
-
-  // Firestoreリアルタイム監視（BeReal通知）
-  useEffect(() => {
-    const unsub = onSnapshot(doc(db, "parties", partyId), (snapshot) => {
-      if (!snapshot.exists()) return;
-      const data = snapshot.data() as Party;
-      setParty(data);
-      if (data.beRealActive) {
-        setBeRealBanner(true);
-      }
-    });
-    return () => unsub();
-  }, [partyId]);
-
-  useEffect(() => {
-    fetchParty();
-  }, [partyId]);
-
   const handleSearchRestaurants = async () => {
     setSearchingRestaurants(true);
     try {
@@ -84,6 +52,45 @@ export default function PartyPage({ params }: PageProps) {
       setSearchingRestaurants(false);
     }
   };
+
+  const fetchParty = async () => {
+    const res = await fetch(`/api/party/${partyId}`);
+    if (res.ok) {
+      const data = await res.json();
+      setParty(data);
+      const stored = localStorage.getItem("kanpai_history");
+      const ids: string[] = stored ? JSON.parse(stored) : [];
+      if (!ids.includes(partyId)) {
+        localStorage.setItem("kanpai_history", JSON.stringify([partyId, ...ids].slice(0, 20)));
+      }
+      setLoading(false);
+      return data;
+    }
+    setLoading(false);
+    return null;
+  };
+
+  // Firestoreリアルタイム監視（BeReal通知）
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, "parties", partyId), (snapshot) => {
+      if (!snapshot.exists()) return;
+      const data = snapshot.data() as Party;
+      setParty(data);
+      if (data.beRealActive) {
+        setBeRealBanner(true);
+      }
+    });
+    return () => unsub();
+  }, [partyId]);
+
+  useEffect(() => {
+    fetchParty().then((data) => {
+      // お店未検索なら自動で検索を開始
+      if (data && !data.restaurants?.length) {
+        handleSearchRestaurants();
+      }
+    });
+  }, [partyId]);
 
   const handleSelectRestaurant = async (restaurant: Restaurant) => {
     setSelectingId(restaurant.id);
@@ -244,17 +251,11 @@ export default function PartyPage({ params }: PageProps) {
           )}
 
           {!party.restaurants?.length ? (
-            <button
-              onClick={handleSearchRestaurants}
-              disabled={searchingRestaurants}
-              className="w-full py-4 rounded-2xl text-white font-bold text-base transition-all active:scale-95 disabled:opacity-60"
-              style={{
-                background: "linear-gradient(135deg, #F5A623 0%, #E8850A 100%)",
-                boxShadow: "0 4px 15px rgba(245, 166, 35, 0.3)",
-              }}
-            >
-              {searchingRestaurants ? "🔍 AIがお店を探しています..." : "🔍 AIでお店を探す"}
-            </button>
+            <div className="flex flex-col items-center gap-3 py-6 text-center">
+              <div className="text-4xl animate-bounce">🔍</div>
+              <p className="font-bold text-gray-700">AIがお店を探しています...</p>
+              <p className="text-sm text-gray-400">しばらくお待ちください</p>
+            </div>
           ) : (
             <div className="flex flex-col gap-4">
               {/* スワイプで選ぶ */}
@@ -273,16 +274,6 @@ export default function PartyPage({ params }: PageProps) {
                 >
                   🗳 みんなの投票結果を見る
                 </Link>
-                <button
-                  onClick={() => {
-                    const swipeUrl = `${appUrl}/party/${partyId}/swipe`;
-                    navigator.clipboard.writeText(swipeUrl);
-                    alert("スワイプURLをコピーしました！参加者に送ってください🍺");
-                  }}
-                  className="w-full py-3 text-sm text-purple-600 font-medium border-t border-purple-100 hover:bg-purple-50 transition-colors"
-                >
-                  🔗 スワイプURLをみんなにシェア
-                </button>
               </div>
 
               {party.selectedRestaurant && (
