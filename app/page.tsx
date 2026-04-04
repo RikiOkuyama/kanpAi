@@ -9,6 +9,7 @@ export default function HomePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
+    title: "",
     date: "",
     time: "19:00",
     area: "",
@@ -58,7 +59,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: "linear-gradient(135deg, #fffbf5 0%, #fef3e2 100%)" }}>
+    <div className="min-h-dvh" style={{ background: "linear-gradient(135deg, #fffbf5 0%, #fef3e2 100%)" }}>
       {/* ヘッダー */}
       <header className="text-center py-10 px-4">
         <div className="text-6xl mb-3">🍺</div>
@@ -78,6 +79,20 @@ export default function HomePage() {
           onSubmit={handleSubmit}
           className="bg-white rounded-3xl shadow-lg p-8 flex flex-col gap-6"
         >
+          {/* タイトル */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-semibold text-gray-700">
+              飲み会タイトル
+            </label>
+            <input
+              type="text"
+              placeholder="例：新歓飲み会、忘年会、チームお疲れ様会"
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              className="border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-amber-400"
+            />
+          </div>
+
           {/* 幹事名 */}
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-semibold text-gray-700">

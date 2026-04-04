@@ -50,7 +50,7 @@ export default function JoinPage({ params }: PageProps) {
 
   if (fetching) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "linear-gradient(135deg, #fffbf5 0%, #fef3e2 100%)" }}>
+      <div className="min-h-dvh flex items-center justify-center" style={{ background: "linear-gradient(135deg, #fffbf5 0%, #fef3e2 100%)" }}>
         <div className="text-4xl animate-bounce">🍺</div>
       </div>
     );
@@ -58,7 +58,7 @@ export default function JoinPage({ params }: PageProps) {
 
   if (!party) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-dvh flex items-center justify-center">
         <p className="text-gray-500">パーティーが見つかりません</p>
       </div>
     );
@@ -66,7 +66,7 @@ export default function JoinPage({ params }: PageProps) {
 
   if (joined) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "linear-gradient(135deg, #fffbf5 0%, #fef3e2 100%)" }}>
+      <div className="min-h-dvh flex items-center justify-center" style={{ background: "linear-gradient(135deg, #fffbf5 0%, #fef3e2 100%)" }}>
         <div className="text-center animate-fade-in-up">
           <div className="text-6xl mb-4">🎉</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">参加登録完了！</h2>
@@ -77,7 +77,7 @@ export default function JoinPage({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "linear-gradient(135deg, #fffbf5 0%, #fef3e2 100%)" }}>
+    <div className="min-h-dvh" style={{ background: "linear-gradient(135deg, #fffbf5 0%, #fef3e2 100%)" }}>
       <div className="max-w-md mx-auto px-4 py-12">
         {/* タイトル */}
         <div className="text-center mb-8">

@@ -55,6 +55,7 @@ export interface SplitResult {
 export interface Party {
   partyId: string;
   createdAt: string;
+  title?: string;       // 飲み会タイトル
   date: string;         // ISO date string "YYYY-MM-DD"
   time: string;         // "HH:mm"
   area: string;

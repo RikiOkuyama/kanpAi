@@ -198,6 +198,9 @@ export default function PartyPage({ params }: PageProps) {
         {/* 基本情報 */}
         <section className="bg-white rounded-3xl shadow-sm p-6 animate-fade-in-up">
           <h2 className="text-xl font-bold text-gray-800 mb-4">📋 飲み会情報</h2>
+          {party.title && (
+            <p className="text-lg font-bold text-amber-700 mb-4">{party.title}</p>
+          )}
           <div className="grid grid-cols-2 gap-3 text-sm">
             <InfoRow icon="📅" label="日時" value={`${party.date} ${party.time}`} />
             <InfoRow icon="📍" label="エリア" value={party.area} />

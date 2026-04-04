@@ -202,7 +202,7 @@ export default function SwipePage({ params }: PageProps) {
   // ローディング
   if (!party) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+      <div className="min-h-dvh flex items-center justify-center bg-gray-900">
         <div className="text-4xl animate-bounce">🍺</div>
       </div>
     );
@@ -211,7 +211,7 @@ export default function SwipePage({ params }: PageProps) {
   // お店未検索
   if (restaurants.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-5 bg-gray-900 text-white px-6">
+      <div className="min-h-dvh flex flex-col items-center justify-center gap-5 bg-gray-900 text-white px-6">
         <div className="text-5xl">🔍</div>
         <p className="text-center text-gray-300">先にダッシュボードで「AIでお店を探す」を実行してください</p>
         <Link href={`/party/${partyId}`} className="px-6 py-3 bg-amber-500 rounded-2xl font-bold">
@@ -224,7 +224,7 @@ export default function SwipePage({ params }: PageProps) {
   // イントロ画面
   if (phase === "intro") {
     return (
-      <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(135deg, #fffbf5 0%, #fef3e2 100%)" }}>
+      <div className="min-h-dvh flex flex-col" style={{ background: "linear-gradient(135deg, #fffbf5 0%, #fef3e2 100%)" }}>
         <header className="bg-white border-b border-amber-100 px-4 py-4 sticky top-0 z-10">
           <div className="max-w-lg mx-auto flex items-center justify-between">
             <Link href={`/party/${partyId}`} className="text-amber-600 text-2xl">←</Link>
@@ -264,7 +264,7 @@ export default function SwipePage({ params }: PageProps) {
   // 結果画面
   if (phase === "results") {
     return (
-      <div className="min-h-screen" style={{ background: "linear-gradient(135deg, #fffbf5 0%, #fef3e2 100%)" }}>
+      <div className="min-h-dvh" style={{ background: "linear-gradient(135deg, #fffbf5 0%, #fef3e2 100%)" }}>
         <header className="bg-white border-b border-amber-100 px-4 py-4 sticky top-0 z-10">
           <div className="max-w-lg mx-auto flex items-center justify-between">
             <Link href={`/party/${partyId}`} className="text-amber-600 text-2xl">←</Link>
@@ -418,7 +418,7 @@ export default function SwipePage({ params }: PageProps) {
     const leftCount = Object.values(votes).filter((v) => v === "left").length;
 
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 px-6 gap-6">
+      <div className="min-h-dvh flex flex-col items-center justify-center bg-gray-900 px-6 gap-6">
         <div className="text-center text-white animate-fade-in-up">
           <div className="text-7xl mb-5">🎉</div>
           <h2 className="text-3xl font-bold mb-3">スワイプ完了！</h2>
@@ -451,7 +451,7 @@ export default function SwipePage({ params }: PageProps) {
 
   // スワイプ画面
   return (
-    <div className="min-h-screen bg-gray-950 flex flex-col select-none overflow-hidden">
+    <div className="h-dvh bg-gray-950 flex flex-col select-none overflow-hidden">
       <style>{`
         @keyframes hint-wobble {
           0%   { transform: translate(0,0) rotate(0deg); }
@@ -465,7 +465,7 @@ export default function SwipePage({ params }: PageProps) {
       `}</style>
 
       {/* ヘッダー */}
-      <div className="flex items-center justify-between px-5 pt-10 pb-4">
+      <div className="flex items-center justify-between px-5 pb-4" style={{ paddingTop: "calc(2.5rem + env(safe-area-inset-top))" }}>
         <Link href={`/party/${partyId}`} className="text-white/60 text-2xl">←</Link>
         <div className="flex flex-col items-center">
           <span className="text-white font-bold text-base">{party.area}の飲み会</span>
@@ -596,7 +596,7 @@ export default function SwipePage({ params }: PageProps) {
       </div>
 
       {/* ボタン操作エリア */}
-      <div className="pb-10 px-5">
+      <div className="px-5" style={{ paddingBottom: "calc(2.5rem + env(safe-area-inset-bottom))" }}>
         {/* ガイドテキスト */}
         <div className="flex justify-between text-xs text-white/30 mb-5 px-2">
           <span>← 左スワイプでパス</span>

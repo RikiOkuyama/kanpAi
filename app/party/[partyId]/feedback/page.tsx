@@ -52,7 +52,7 @@ export default function FeedbackPage({ params }: PageProps) {
   if (done) {
     return (
       <div
-        className="min-h-screen flex items-center justify-center"
+        className="min-h-dvh flex items-center justify-center"
         style={{ background: "linear-gradient(135deg, #fffbf5 0%, #fef3e2 100%)" }}
       >
         <div className="text-center animate-fade-in-up">
@@ -65,7 +65,7 @@ export default function FeedbackPage({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "linear-gradient(135deg, #fffbf5 0%, #fef3e2 100%)" }}>
+    <div className="min-h-dvh" style={{ background: "linear-gradient(135deg, #fffbf5 0%, #fef3e2 100%)" }}>
       <header className="bg-white border-b border-amber-100 px-4 py-4 sticky top-0 z-10">
         <div className="max-w-lg mx-auto flex items-center gap-3">
           <Link href={`/party/${partyId}`} className="text-amber-600 text-2xl">←</Link>

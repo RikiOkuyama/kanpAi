@@ -119,11 +119,11 @@ export default function CameraPage({ params }: PageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col">
+    <div className="h-dvh bg-black flex flex-col">
       {/* ヘッダー */}
-      <header className="flex items-center justify-between px-4 py-3 z-10">
+      <header className="flex items-center justify-between px-4 pb-3 z-10" style={{ paddingTop: "calc(0.75rem + env(safe-area-inset-top))" }}>
         <Link href={`/party/${partyId}`} className="text-white text-2xl">←</Link>
-        <span className="text-white font-bold">📸 BeReal</span>
+        <span className="text-white font-bold">📸 はい、チーズ！</span>
         {!captured && (
           <button onClick={handleFlip} className="text-white text-2xl">🔄</button>
         )}
@@ -162,7 +162,7 @@ export default function CameraPage({ params }: PageProps) {
       </div>
 
       {/* コントロール */}
-      <div className="px-6 py-8 flex flex-col items-center gap-4">
+      <div className="px-6 pt-8 flex flex-col items-center gap-4" style={{ paddingBottom: "calc(2rem + env(safe-area-inset-bottom))" }}>
         {!captured ? (
           <button
             onClick={handleCapture}

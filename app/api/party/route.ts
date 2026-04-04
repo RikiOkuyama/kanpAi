@@ -6,7 +6,7 @@ import { Party } from "@/types/party";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { date, time, area, budget, headcount, requests, organizerName, organizerLineUserId } = body;
+    const { title, date, time, area, budget, headcount, requests, organizerName, organizerLineUserId } = body;
 
     if (!date || !area || !budget || !headcount || !organizerName) {
       return NextResponse.json({ error: "必須項目が不足しています" }, { status: 400 });
@@ -18,6 +18,7 @@ export async function POST(req: NextRequest) {
     const party: Party = {
       partyId,
       createdAt: now,
+      ...(title ? { title } : {}),
       date,
       time: time ?? "19:00",
       area,
