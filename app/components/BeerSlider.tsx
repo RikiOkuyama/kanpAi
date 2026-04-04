@@ -110,9 +110,12 @@ export default function BeerSlider({
   const surfaceHW = GLASS_BOT_HW + (GLASS_RIM_HW - GLASS_BOT_HW) * surfaceRatio;
 
   // Stream bezier control point
-  const streamW = 2 + (angle / MAX_ANGLE) * 3;
+  const streamW = 5 + (angle / MAX_ANGLE) * 11;
+  const hw = streamW / 2;
   const streamCX = neckX + (GLASS_CX - 8 - neckX) * 0.5 + 10;
   const streamCY = neckY + (GLASS_RIM_Y - neckY) * 0.45 + 8;
+  const streamEndX = GLASS_CX - 6;
+  const streamEndY = fillPct > 3 ? Math.max(beerTop, GLASS_RIM_Y + 1) : GLASS_RIM_Y + 5;
 
   // Bottle path (pivot at PIVOT_X, PIVOT_Y; bottle extends upward)
   const bx = PIVOT_X;
@@ -173,6 +176,12 @@ export default function BeerSlider({
           <linearGradient id="bc-stream-grad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%"   stopColor="#F5C030" stopOpacity="0.9" />
             <stop offset="100%" stopColor="#F5A623" stopOpacity="0.6" />
+          </linearGradient>
+
+          <linearGradient id="bc-stream-fill-grad" x1="0.1" y1="0" x2="0.9" y2="1">
+            <stop offset="0%"   stopColor="#FFE070" stopOpacity="0.95" />
+            <stop offset="55%"  stopColor="#F5A623" stopOpacity="0.92" />
+            <stop offset="100%" stopColor="#C87D10" stopOpacity="0.85" />
           </linearGradient>
         </defs>
 
@@ -260,23 +269,75 @@ export default function BeerSlider({
         {/* ── POUR STREAM ── */}
         {showStream && (
           <>
-            {/* Outer glow */}
+            {/* Ambient outer glow */}
             <path
-              d={`M ${neckX} ${neckY} Q ${streamCX} ${streamCY} ${GLASS_CX - 6} ${GLASS_RIM_Y}`}
+              d={`M ${neckX} ${neckY} Q ${streamCX} ${streamCY} ${streamEndX} ${streamEndY}`}
               fill="none"
-              stroke="rgba(245,180,50,0.25)"
-              strokeWidth={streamW + 4}
+              stroke="rgba(245,190,60,0.10)"
+              strokeWidth={streamW * 5}
               strokeLinecap="round"
             />
-            {/* Stream */}
             <path
-              d={`M ${neckX} ${neckY} Q ${streamCX} ${streamCY} ${GLASS_CX - 6} ${GLASS_RIM_Y}`}
+              d={`M ${neckX} ${neckY} Q ${streamCX} ${streamCY} ${streamEndX} ${streamEndY}`}
               fill="none"
-              stroke="url(#bc-stream-grad)"
-              strokeWidth={streamW}
+              stroke="rgba(245,180,50,0.28)"
+              strokeWidth={streamW * 2.5}
+              strokeLinecap="round"
+            />
+            {/* Filled liquid stream body */}
+            <path
+              d={`
+                M ${neckX - hw} ${neckY}
+                Q ${streamCX - hw * 0.6} ${streamCY} ${streamEndX - hw * 1.7} ${streamEndY}
+                L ${streamEndX + hw * 1.7} ${streamEndY}
+                Q ${streamCX + hw * 0.6} ${streamCY} ${neckX + hw} ${neckY}
+                Z
+              `}
+              fill="url(#bc-stream-fill-grad)"
+            />
+            {/* Animated highlight streak */}
+            <path
+              d={`M ${neckX} ${neckY} Q ${streamCX} ${streamCY} ${streamEndX} ${streamEndY}`}
+              fill="none"
+              stroke="rgba(255,248,190,0.65)"
+              strokeWidth={hw * 0.7}
               strokeLinecap="round"
               className="bc-stream-anim"
             />
+            {/* Splash at landing point */}
+            <ellipse
+              cx={streamEndX}
+              cy={streamEndY}
+              rx={hw * 3.5}
+              ry={2.5}
+              fill="rgba(255,220,80,0.5)"
+              clipPath="url(#bc-clip)"
+            />
+          </>
+        )}
+
+        {/* Rising bubbles when actively pouring */}
+        {showStream && fillPct > 2 && (
+          <>
+            {([
+              { cx: GLASS_CX - 9, r: 2.2, dur: "0.9s", delay: "0s" },
+              { cx: GLASS_CX + 4,  r: 1.6, dur: "1.1s", delay: "0.28s" },
+              { cx: GLASS_CX - 2,  r: 2.5, dur: "0.75s", delay: "0.12s" },
+              { cx: GLASS_CX + 11, r: 1.4, dur: "1.0s",  delay: "0.45s" },
+            ] as const).map((b, i) => (
+              <circle
+                key={i}
+                clipPath="url(#bc-clip)"
+                cx={b.cx}
+                cy={beerTop - 3}
+                r={b.r}
+                fill="rgba(255,255,255,0.72)"
+                style={{
+                  animation: `bc-bubble ${b.dur} ease-out infinite`,
+                  animationDelay: b.delay,
+                }}
+              />
+            ))}
           </>
         )}
 

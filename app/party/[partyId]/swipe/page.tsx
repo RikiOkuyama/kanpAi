@@ -526,20 +526,32 @@ export default function SwipePage({ params }: PageProps) {
             }}
           >
             {/* 写真 */}
-            <div className="relative">
+            <div className="relative overflow-hidden" style={{ height: "240px" }}>
               {currentRestaurant.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={currentRestaurant.imageUrl}
                   alt={currentRestaurant.name}
-                  className="w-full h-56 object-cover pointer-events-none"
+                  className="w-full h-full object-cover pointer-events-none"
                   draggable={false}
+                  style={{
+                    objectPosition: "center 40%",
+                    filter: "brightness(1.06) contrast(1.1) saturate(1.22)",
+                  }}
                 />
               ) : (
-                <div className="w-full h-56 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                   <span className="text-6xl">🍽</span>
                 </div>
               )}
+
+              {/* ロゴ隠し＆雰囲気グラデーション（下から40%） */}
+              <div className="absolute bottom-0 left-0 right-0 pointer-events-none"
+                style={{
+                  height: "55%",
+                  background: "linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.28) 55%, transparent 100%)",
+                }}
+              />
 
               {/* スワイプインジケーター */}
               {indicator && (
@@ -561,9 +573,6 @@ export default function SwipePage({ params }: PageProps) {
                   </div>
                 </div>
               )}
-
-              {/* グラデーション */}
-              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/30 to-transparent" />
             </div>
 
             {/* お店情報 */}
