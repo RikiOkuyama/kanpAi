@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, use, useRef, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { Party, Restaurant } from "@/types/party";
 import { SwipeDirection } from "@/app/api/party/[partyId]/swipe/route";
 import { v4 as uuidv4 } from "uuid";
@@ -32,6 +33,8 @@ const INDICATOR_CONFIG = {
 
 export default function SwipePage({ params }: PageProps) {
   const { partyId } = use(params);
+  const searchParams = useSearchParams();
+  const viewResults = searchParams.get("view") === "results";
   const [party, setParty] = useState<Party | null>(null);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -66,7 +69,10 @@ export default function SwipePage({ params }: PageProps) {
         setParty(p);
         setRestaurants(p.restaurants ?? []);
       });
-  }, [partyId]);
+    if (viewResults) {
+      fetchResults().then(() => setPhase("results"));
+    }
+  }, [partyId, viewResults, fetchResults]);
 
   // ヒント：最初のカードを自動で少し揺らす
   useEffect(() => {

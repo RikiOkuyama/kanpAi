@@ -267,6 +267,12 @@ export default function PartyPage({ params }: PageProps) {
                 >
                   👆 スワイプでお店を選ぶ
                 </Link>
+                <Link
+                  href={`/party/${partyId}/swipe?view=results`}
+                  className="block w-full py-3.5 text-center text-amber-700 font-bold text-base border-t border-purple-100 hover:bg-amber-50 transition-colors"
+                >
+                  🗳 みんなの投票結果を見る
+                </Link>
                 <button
                   onClick={() => {
                     const swipeUrl = `${appUrl}/party/${partyId}/swipe`;
