@@ -135,7 +135,7 @@ export default function PartyPage({ params }: PageProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "linear-gradient(135deg, #fffbf5 0%, #fef3e2 100%)" }}>
+      <div className="min-h-dvh flex items-center justify-center" style={{ background: "linear-gradient(135deg, #fffbf5 0%, #fef3e2 100%)" }}>
         <div className="text-center">
           <div className="text-5xl mb-4 animate-bounce">🍺</div>
           <p className="text-gray-500">読み込み中...</p>
@@ -146,7 +146,7 @@ export default function PartyPage({ params }: PageProps) {
 
   if (!party) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-dvh flex items-center justify-center">
         <p className="text-gray-500">パーティーが見つかりません</p>
       </div>
     );
@@ -156,7 +156,7 @@ export default function PartyPage({ params }: PageProps) {
     party.geminiSuggestions?.find((s) => s.restaurantId === id);
 
   return (
-    <div className="min-h-screen" style={{ background: "linear-gradient(135deg, #fffbf5 0%, #fef3e2 100%)" }}>
+    <div className="min-h-dvh" style={{ background: "linear-gradient(135deg, #fffbf5 0%, #fef3e2 100%)" }}>
       {/* BeReal バナー */}
       {beRealBanner && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 animate-fade-in-up">
@@ -434,7 +434,7 @@ export default function PartyPage({ params }: PageProps) {
               })}
 
               <button
-                onClick={handleSearchRestaurants}
+                onClick={() => handleSearchRestaurants()}
                 disabled={searchingRestaurants}
                 className="w-full py-3 border border-amber-300 text-amber-700 rounded-2xl text-sm font-medium hover:bg-amber-50 transition-colors disabled:opacity-50"
               >

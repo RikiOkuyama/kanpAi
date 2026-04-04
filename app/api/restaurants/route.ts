@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
       const raw = await callGeminiWithSearch(searchPrompt);
 
       const parsed = extractJSON(raw);
-      if (parsed?.restaurants?.length) {
+      if (parsed && Array.isArray(parsed.restaurants) && parsed.restaurants.length) {
         restaurants = (parsed.restaurants as Array<Record<string, string | number>>).map(
           (r, i): Restaurant => ({
             id: `gemini_${i}`,
@@ -79,8 +79,8 @@ export async function POST(req: NextRequest) {
         const rankRaw = await callGemini(rankPrompt);
         const rankParsed = extractJSON(rankRaw);
         if (rankParsed) {
-          suggestions = rankParsed.suggestions ?? [];
-          geminiMessage = rankParsed.message ?? "";
+          suggestions = (rankParsed.suggestions as GeminiSuggestion[] | undefined) ?? [];
+          geminiMessage = String(rankParsed.message ?? "");
         }
       }
     }
